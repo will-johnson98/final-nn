@@ -1,3 +1,4 @@
+![BuildStatus](https://github.com/will-johnson98/final-nn/actions/workflows/test.yml/badge.svg?event=push)
 # Final project: neural network
 
 ## Overview

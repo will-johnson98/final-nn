@@ -20,7 +20,28 @@ def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bo
         sampled_labels: List[bool]
             List of labels for the sampled sequences
     """
-    pass
+    # Convert labels to numpy array for easier manipulation
+    labels_array = np.array(labels)
+    positive_indices = np.where(labels_array == True)[0]
+    negative_indices = np.where(labels_array == False)[0]
+    
+    num_positive = len(positive_indices)
+    num_negative = len(negative_indices)
+    max_class_size = max(num_positive, num_negative)
+    
+    if num_positive < num_negative:
+        sampled_positive_indices = np.random.choice(positive_indices, max_class_size, replace=True)
+        sampled_negative_indices = negative_indices
+    else:
+        sampled_positive_indices = positive_indices
+        sampled_negative_indices = np.random.choice(negative_indices, max_class_size, replace=True)
+    
+    sampled_indices = np.concatenate([sampled_positive_indices, sampled_negative_indices])
+    np.random.shuffle(sampled_indices)
+    sampled_seqs = [seqs[i] for i in sampled_indices]
+    sampled_labels = [labels[i] for i in sampled_indices]
+    
+    return sampled_seqs, sampled_labels
 
 def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
     """
@@ -41,4 +62,27 @@ def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
                 G -> [0, 0, 0, 1]
             Then, AGA -> [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0].
     """
-    pass
+    # Define the encoding dictionary
+    encoding_dict = {
+        'A': [1, 0, 0, 0],
+        'T': [0, 1, 0, 0],
+        'C': [0, 0, 1, 0],
+        'G': [0, 0, 0, 1],
+        'a': [1, 0, 0, 0],
+        't': [0, 1, 0, 0],
+        'c': [0, 0, 1, 0],
+        'g': [0, 0, 0, 1],
+        'N': [0, 0, 0, 0],
+        'n': [0, 0, 0, 0]
+    }
+    all_encodings = []
+    
+    for seq in seq_arr:
+        encoding = []
+        
+        for nucleotide in seq:
+            nucleotide_encoding = encoding_dict.get(nucleotide, [0, 0, 0, 0])
+            encoding.extend(nucleotide_encoding)
+        all_encodings.append(encoding)
+    
+    return np.array(all_encodings)
